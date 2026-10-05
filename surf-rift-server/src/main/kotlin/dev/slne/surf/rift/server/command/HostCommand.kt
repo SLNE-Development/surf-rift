@@ -7,8 +7,8 @@ import dev.slne.surf.api.minestom.permission.hasPermission
 import dev.slne.surf.rift.server.game.RiftGame
 import dev.slne.surf.rift.server.game.host.RiftHost
 import dev.slne.surf.rift.server.game.lobby.LobbyItems
-import dev.slne.surf.rift.server.message.send
 import dev.slne.surf.rift.server.permission.PermissionList
+import dev.slne.surf.rift.server.util.send
 import net.minestom.server.entity.Player
 
 fun hostCommand() = commandTree("host") {

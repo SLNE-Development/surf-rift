@@ -1,27 +1,27 @@
-package dev.slne.surf.rift.server.game.glide
+package dev.slne.surf.rift.server.game.flight.glide
 
-import dev.slne.surf.rift.server.message.actionBar
 import dev.slne.surf.rift.server.game.combat.FallDamage
+import dev.slne.surf.rift.server.game.player.RiftPlayerManager
 import dev.slne.surf.rift.server.game.player.RiftPlayerState
-import dev.slne.surf.rift.server.game.player.RiftPlayers
+import dev.slne.surf.rift.server.util.actionBar
 import dev.slne.surf.rift.server.visibility.RiftVisibility
 import net.minestom.server.coordinate.Pos
 import net.minestom.server.coordinate.Vec
 import net.minestom.server.entity.Entity
 import net.minestom.server.entity.Player
-import java.util.UUID
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
-object GliderManager {
-    private val gliders = ConcurrentHashMap<UUID, Glider>()
+object RiftGliderManager {
+    private val gliders = ConcurrentHashMap<UUID, RiftGlider>()
 
     fun start(player: Player, position: Pos, velocity: Vec) {
         val instance = player.instance ?: return
         gliders.remove(player.uuid)?.remove()
 
-        val riftPlayer = RiftPlayers[player]
+        val riftPlayer = RiftPlayerManager[player]
         riftPlayer.state = RiftPlayerState.GLIDING
-        gliders[player.uuid] = Glider(player, instance, position, velocity)
+        gliders[player.uuid] = RiftGlider(player, instance, position, velocity)
         RiftVisibility.refreshAll()
     }
 
@@ -31,7 +31,8 @@ object GliderManager {
 
     fun hasBody(uuid: UUID) = gliders[uuid]?.body != null
 
-    fun ownerOf(entity: Entity): UUID? = gliders.values.firstOrNull { it.body == entity || it.parachute == entity }?.player?.uuid
+    fun ownerOf(entity: Entity): UUID? =
+        gliders.values.firstOrNull { it.body == entity || it.parachute == entity }?.player?.uuid
 
     fun tick() {
         if (gliders.isEmpty()) {
@@ -50,13 +51,13 @@ object GliderManager {
         }
     }
 
-    private fun onLanded(uuid: UUID, glider: Glider) {
-        val riftPlayer = RiftPlayers.find(uuid) ?: return
+    private fun onLanded(uuid: UUID, riftGlider: RiftGlider) {
+        val riftPlayer = RiftPlayerManager.find(uuid) ?: return
         if (riftPlayer.state == RiftPlayerState.GLIDING) {
             riftPlayer.state = RiftPlayerState.ALIVE
         }
 
-        val player = glider.player
+        val player = riftGlider.player
         if (player.isOnline) {
             FallDamage.grantImmunity(player, 60)
             player.actionBar {

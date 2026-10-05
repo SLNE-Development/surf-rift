@@ -2,31 +2,27 @@ package dev.slne.surf.rift.server.game.flight
 
 import dev.slne.surf.api.minestom.extension.editEntityMeta
 import dev.slne.surf.rift.server.game.RiftGame
-import dev.slne.surf.rift.server.game.glide.GliderManager
+import dev.slne.surf.rift.server.game.flight.glide.RiftGliderManager
+import dev.slne.surf.rift.server.game.player.RiftPlayerManager
 import dev.slne.surf.rift.server.game.player.RiftPlayerState
-import dev.slne.surf.rift.server.game.player.RiftPlayers
 import dev.slne.surf.rift.server.game.settings.RiftSettings
-import dev.slne.surf.rift.server.message.send
 import dev.slne.surf.rift.server.sound.RiftSounds
 import dev.slne.surf.rift.server.util.freeze
 import dev.slne.surf.rift.server.util.resetPlayerState
+import dev.slne.surf.rift.server.util.send
 import dev.slne.surf.rift.server.visibility.RiftVisibility
 import net.kyori.adventure.sound.Sound
 import net.minestom.server.coordinate.Vec
-import net.minestom.server.entity.Entity
-import net.minestom.server.entity.EntityType
-import net.minestom.server.entity.GameMode
-import net.minestom.server.entity.LivingEntity
-import net.minestom.server.entity.Player
+import net.minestom.server.entity.*
 import net.minestom.server.entity.metadata.flying.PhantomMeta
-import java.util.UUID
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
-object PhantomFlight {
+object RiftPhantomFlight {
     private val phantoms = ConcurrentHashMap<UUID, Entity>()
 
     var active = false
-    var path: FlightPath? = null
+    var path: RiftFlightPath? = null
     var progressTicks = 0
     var totalTicks = 1
 
@@ -34,13 +30,15 @@ object PhantomFlight {
     val canJump get() = active && progressTicks >= 30
 
     fun start(players: List<Player>) {
-        val flightPath = FlightPath.random(RiftGame.map)
-        path = flightPath
+        val riftFlightPath = RiftFlightPath.random(RiftGame.map)
+        path = riftFlightPath
         progressTicks = 0
-        totalTicks = (flightPath.length / RiftSettings.flightSpeed.blocksPerTick).toInt().coerceAtLeast(100)
+        totalTicks =
+            (riftFlightPath.length / RiftSettings.riftFlightSpeedLevel.blocksPerTick).toInt()
+                .coerceAtLeast(100)
         active = true
 
-        val startPos = flightPath.at(0.0)
+        val startPos = riftFlightPath.at(0.0)
         players.forEach { board(it, startPos) }
     }
 
@@ -51,7 +49,7 @@ object PhantomFlight {
         player.isInvulnerable = true
         player.freeze(true)
 
-        val riftPlayer = RiftPlayers[player]
+        val riftPlayer = RiftPlayerManager[player]
         riftPlayer.state = RiftPlayerState.FLYING
 
         player.setInstance(RiftGame.instance, startPos).thenRun {
@@ -87,14 +85,14 @@ object PhantomFlight {
         for ((uuid, phantom) in phantoms) {
             phantom.teleport(position)
 
-            val rider = RiftPlayers.find(uuid)?.playerOrNull
+            val rider = RiftPlayerManager.find(uuid)?.playerOrNull
             if (rider != null && rider.vehicle != phantom && progressTicks % 10 == 0) {
                 phantom.addPassenger(rider)
             }
         }
 
         if (progressTicks == 30) {
-            phantoms.keys.mapNotNull { RiftPlayers.find(it)?.playerOrNull }.forEach {
+            phantoms.keys.mapNotNull { RiftPlayerManager.find(it)?.playerOrNull }.forEach {
                 it.send {
                     success("Du kannst jetzt mit ")
                     variableValue("SHIFT")
@@ -105,14 +103,15 @@ object PhantomFlight {
         }
 
         if (progressTicks % 80 == 0) {
-            phantoms.keys.mapNotNull { RiftPlayers.find(it)?.playerOrNull }.forEach {
+            phantoms.keys.mapNotNull { RiftPlayerManager.find(it)?.playerOrNull }.forEach {
                 it.playSound(RiftSounds.FLIGHT_WIND, Sound.Emitter.self())
             }
         }
 
         if (progressTicks >= totalTicks) {
             phantoms.keys.toList().forEach { uuid ->
-                RiftPlayers.find(uuid)?.playerOrNull?.let { jump(it, forced = true) } ?: phantoms.remove(uuid)?.remove()
+                RiftPlayerManager.find(uuid)?.playerOrNull?.let { jump(it, forced = true) }
+                    ?: phantoms.remove(uuid)?.remove()
             }
             active = false
             RiftGame.onFlightFinished()
@@ -147,8 +146,10 @@ object PhantomFlight {
             }
         }
 
-        val initialVelocity: Vec = flightPath.direction.mul(RiftSettings.flightSpeed.blocksPerTick * 0.6).withY(-0.35)
-        GliderManager.start(player, position, initialVelocity)
+        val initialVelocity: Vec =
+            flightPath.direction.mul(RiftSettings.riftFlightSpeedLevel.blocksPerTick * 0.6)
+                .withY(-0.35)
+        RiftGliderManager.start(player, position, initialVelocity)
 
         if (phantoms.isEmpty() && active) {
             active = false

@@ -2,8 +2,8 @@ package dev.slne.surf.rift.server.game.combat
 
 import dev.slne.surf.api.minestom.event.EventRegistrar
 import dev.slne.surf.rift.server.game.RiftGame
+import dev.slne.surf.rift.server.game.player.RiftPlayerManager
 import dev.slne.surf.rift.server.game.player.RiftPlayerState
-import dev.slne.surf.rift.server.game.player.RiftPlayers
 import dev.slne.surf.rift.server.game.zone.ZoneController
 import dev.slne.surf.rift.server.sound.RiftSounds
 import net.kyori.adventure.sound.Sound
@@ -48,7 +48,7 @@ class EnderPearlListener : EventRegistrar {
         event.isCancelled = true
 
         val player = event.player
-        if (!RiftGame.phase.running || RiftPlayers[player].state != RiftPlayerState.ALIVE) {
+        if (!RiftGame.phase.running || RiftPlayerManager[player].state != RiftPlayerState.ALIVE) {
             return
         }
         if (player.aliveTicks < player.getTag(cooldownTag)) {
@@ -83,7 +83,7 @@ class EnderPearlListener : EventRegistrar {
         if (shooter == null || !shooter.isOnline || shooter.instance != pearl.instance) {
             return
         }
-        if (RiftPlayers[shooter].state != RiftPlayerState.ALIVE) {
+        if (RiftPlayerManager[shooter].state != RiftPlayerState.ALIVE) {
             return
         }
 

@@ -3,11 +3,11 @@ package dev.slne.surf.rift.server.listener
 import dev.slne.surf.api.core.messages.adventure.sendText
 import dev.slne.surf.api.minestom.event.EventRegistrar
 import dev.slne.surf.rift.server.game.RiftGame
-import dev.slne.surf.rift.server.game.death.EliminationService
-import dev.slne.surf.rift.server.game.death.SpectatorService
+import dev.slne.surf.rift.server.game.death.RiftEliminationService
+import dev.slne.surf.rift.server.game.death.RiftSpectatorService
 import dev.slne.surf.rift.server.game.host.RiftHost
 import dev.slne.surf.rift.server.game.lobby.RiftLobby
-import dev.slne.surf.rift.server.game.player.RiftPlayers
+import dev.slne.surf.rift.server.game.player.RiftPlayerManager
 import dev.slne.surf.rift.server.game.team.RiftTeams
 import dev.slne.surf.rift.server.hud.RiftHud
 import dev.slne.surf.rift.server.tab.RiftTablist
@@ -43,7 +43,7 @@ class ConnectionListener : EventRegistrar {
             return
         }
         val player = event.player
-        val riftPlayer = RiftPlayers[player]
+        val riftPlayer = RiftPlayerManager[player]
 
         player.setReducedDebugScreenInformation(true)
         RiftVisibility.apply(player)
@@ -64,7 +64,7 @@ class ConnectionListener : EventRegistrar {
                 }
             }
         } else {
-            SpectatorService.makeSpectator(player, null)
+            RiftSpectatorService.makeSpectator(player, null)
         }
 
         MinecraftServer.getSchedulerManager().scheduleNextTick {
@@ -75,7 +75,7 @@ class ConnectionListener : EventRegistrar {
 
     private fun handleDisconnect(event: PlayerDisconnectEvent) {
         val player = event.player
-        val riftPlayer = RiftPlayers[player]
+        val riftPlayer = RiftPlayerManager[player]
 
         RiftHud.remove(player)
         RiftTablist.reset(player.uuid)
@@ -83,7 +83,7 @@ class ConnectionListener : EventRegistrar {
         when {
             RiftGame.phase.inLobby -> {
                 RiftTeams.leave(riftPlayer)
-                RiftPlayers.remove(player.uuid)
+                RiftPlayerManager.remove(player.uuid)
                 RiftHost.handleLeave(player)
                 RiftLobby.instance.players.filter { it.uuid != player.uuid }.forEach {
                     it.sendText {
@@ -95,7 +95,12 @@ class ConnectionListener : EventRegistrar {
                 }
             }
 
-            riftPlayer.alive -> EliminationService.eliminate(riftPlayer, "disconnect", null, online = false)
+            riftPlayer.alive -> RiftEliminationService.eliminate(
+                riftPlayer,
+                "disconnect",
+                null,
+                online = false
+            )
         }
 
         MinecraftServer.getSchedulerManager().scheduleNextTick {

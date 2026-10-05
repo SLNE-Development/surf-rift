@@ -6,14 +6,14 @@ import kotlin.random.Random
 
 class LootTable(
     val rolls: IntRange,
-    val entries: List<LootEntry>,
+    val entries: List<LootTableEntry>,
 ) {
     private val totalWeight = entries.sumOf { it.weight }
 
     fun roll(random: Random, multiplier: Double): List<ItemStack> {
         val base = random.nextInt(rolls.first, rolls.last + 1)
         val count = (base * multiplier).roundToInt().coerceAtLeast(1)
-        val picked = mutableListOf<LootEntry>()
+        val picked = mutableListOf<LootTableEntry>()
 
         repeat(count) {
             var remaining = random.nextInt(totalWeight)

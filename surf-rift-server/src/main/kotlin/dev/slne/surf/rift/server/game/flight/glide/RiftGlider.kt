@@ -1,4 +1,4 @@
-package dev.slne.surf.rift.server.game.glide
+package dev.slne.surf.rift.server.game.flight.glide
 
 import dev.slne.surf.api.minestom.extension.editEntityMeta
 import dev.slne.surf.rift.server.game.zone.ZoneController
@@ -19,7 +19,7 @@ import kotlin.math.cos
 import kotlin.math.floor
 import kotlin.math.sin
 
-class Glider(
+class RiftGlider(
     val player: Player,
     val instance: Instance,
     start: Pos,
@@ -48,7 +48,14 @@ class Glider(
         }
 
         parachute = ParachuteEntity(instance, start.withPitch(0f), player.uuid)
-        body = player.skin?.let { skin -> GliderBody(player.uuid, instance, start.withPitch(0f), skin) }
+        body = player.skin?.let { skin ->
+            GliderBody(
+                player.uuid,
+                instance,
+                start.withPitch(0f),
+                skin
+            )
+        }
 
         player.isInvisible = body != null
         player.playSound(RiftSounds.PARACHUTE_OPEN, Sound.Emitter.self())
@@ -132,7 +139,13 @@ class Glider(
         get() {
             var y = floor(position.y()).toInt()
             val minY = instance.cachedDimensionType.minY()
-            while (y > minY && instance.getBlock(position.blockX(), y, position.blockZ(), Block.Getter.Condition.TYPE)?.isSolid != true) {
+            while (y > minY && instance.getBlock(
+                    position.blockX(),
+                    y,
+                    position.blockZ(),
+                    Block.Getter.Condition.TYPE
+                )?.isSolid != true
+            ) {
                 y--
             }
             return (position.y() - y - 1).toInt().coerceAtLeast(0)
@@ -144,7 +157,12 @@ class Glider(
         for (step in 1..steps) {
             val progress = step.toDouble() / steps
             val point = from.add(to.sub(from).mul(progress))
-            val feet = instance.getBlock(point.blockX(), floor(point.y() - 0.05).toInt(), point.blockZ(), Block.Getter.Condition.TYPE) ?: Block.AIR
+            val feet = instance.getBlock(
+                point.blockX(),
+                floor(point.y() - 0.05).toInt(),
+                point.blockZ(),
+                Block.Getter.Condition.TYPE
+            ) ?: Block.AIR
 
             if (feet.isSolid || feet.isLiquid) {
                 val groundY = floor(point.y() - 0.05) + if (feet.isLiquid) 0.6 else 1.0

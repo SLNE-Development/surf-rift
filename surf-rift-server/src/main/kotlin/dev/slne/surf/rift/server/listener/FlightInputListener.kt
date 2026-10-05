@@ -1,11 +1,11 @@
 package dev.slne.surf.rift.server.listener
 
-import dev.slne.surf.rift.server.message.actionBar
 import dev.slne.surf.api.minestom.event.EventRegistrar
-import dev.slne.surf.rift.server.game.flight.PhantomFlight
+import dev.slne.surf.rift.server.game.flight.RiftPhantomFlight
+import dev.slne.surf.rift.server.game.player.RiftPlayerManager
 import dev.slne.surf.rift.server.game.player.RiftPlayerState
-import dev.slne.surf.rift.server.game.player.RiftPlayers
 import dev.slne.surf.rift.server.sound.RiftSounds
+import dev.slne.surf.rift.server.util.actionBar
 import net.kyori.adventure.sound.Sound
 import net.minestom.server.event.Event
 import net.minestom.server.event.EventNode
@@ -19,11 +19,11 @@ class FlightInputListener : EventRegistrar {
             }
 
             val player = event.player
-            if (RiftPlayers[player].state != RiftPlayerState.FLYING) {
+            if (RiftPlayerManager[player].state != RiftPlayerState.FLYING) {
                 return@addListener
             }
 
-            if (!PhantomFlight.jump(player)) {
+            if (!RiftPhantomFlight.jump(player)) {
                 player.playSound(RiftSounds.UI_DENY, Sound.Emitter.self())
                 player.actionBar {
                     error("Noch nicht! ")

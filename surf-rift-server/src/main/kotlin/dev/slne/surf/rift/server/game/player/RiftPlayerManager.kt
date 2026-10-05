@@ -1,10 +1,10 @@
 package dev.slne.surf.rift.server.game.player
 
 import net.minestom.server.entity.Player
-import java.util.UUID
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
-object RiftPlayers {
+object RiftPlayerManager {
     private val players = ConcurrentHashMap<UUID, RiftPlayer>()
 
     val all: Collection<RiftPlayer> get() = players.values

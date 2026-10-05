@@ -5,9 +5,9 @@ import dev.slne.surf.rift.server.env.EnvVariables
 import dev.slne.surf.rift.server.game.RiftGame
 import dev.slne.surf.rift.server.game.lobby.LobbyItems
 import dev.slne.surf.rift.server.game.lobby.RiftLobby
-import dev.slne.surf.rift.server.message.send
 import dev.slne.surf.rift.server.permission.PermissionList
 import dev.slne.surf.rift.server.sound.RiftSounds
+import dev.slne.surf.rift.server.util.send
 import net.kyori.adventure.sound.Sound
 import net.minestom.server.MinecraftServer
 import net.minestom.server.entity.Player

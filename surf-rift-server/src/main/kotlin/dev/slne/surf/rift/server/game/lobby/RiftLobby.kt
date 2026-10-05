@@ -1,7 +1,7 @@
 package dev.slne.surf.rift.server.game.lobby
 
 import dev.slne.surf.rift.server.env.EnvVariables
-import dev.slne.surf.rift.server.game.map.MapLoader
+import dev.slne.surf.rift.server.game.map.RiftMapLoader
 import dev.slne.surf.rift.server.util.resetPlayerState
 import net.minestom.server.coordinate.Pos
 import net.minestom.server.entity.GameMode
@@ -15,7 +15,8 @@ object RiftLobby {
     val boardingCenter: Pos = EnvVariables.RIFT_BOARDING_POSITION.posOrNull() ?: spawn
 
     fun create() {
-        instance = MapLoader.load(EnvVariables.RIFT_LOBBY_WORLD.string(), LobbyGenerator.generator)
+        instance =
+            RiftMapLoader.load(EnvVariables.RIFT_LOBBY_WORLD.string(), LobbyGenerator.generator)
     }
 
     fun contains(player: Player) = ::instance.isInitialized && player.instance == instance

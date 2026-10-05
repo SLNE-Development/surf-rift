@@ -2,9 +2,9 @@ package dev.slne.surf.rift.server.game.combat
 
 import dev.slne.surf.api.minestom.event.EventRegistrar
 import dev.slne.surf.rift.server.game.RiftGame
-import dev.slne.surf.rift.server.game.death.EliminationService
+import dev.slne.surf.rift.server.game.death.RiftEliminationService
+import dev.slne.surf.rift.server.game.player.RiftPlayerManager
 import dev.slne.surf.rift.server.game.player.RiftPlayerState
-import dev.slne.surf.rift.server.game.player.RiftPlayers
 import dev.slne.surf.rift.server.game.team.RiftTeams
 import dev.slne.surf.rift.server.visual.ScreenEffects
 import net.minestom.server.entity.Player
@@ -24,7 +24,7 @@ class RiftDamageListener : EventRegistrar {
 
     private fun handleDamage(event: EntityDamageEvent) {
         val player = event.entity as? Player ?: return
-        val victim = RiftPlayers[player]
+        val victim = RiftPlayerManager[player]
 
         if (!RiftGame.phase.running || (victim.state != RiftPlayerState.ALIVE && victim.state != RiftPlayerState.GLIDING)) {
             event.isCancelled = true
@@ -34,7 +34,7 @@ class RiftDamageListener : EventRegistrar {
         val damage = event.damage
         val amount = damage.amount.toDouble()
         val attacker = damage.attacker as? Player
-        val attackerState = attacker?.let { RiftPlayers[it] }
+        val attackerState = attacker?.let { RiftPlayerManager[it] }
 
         if (attackerState != null) {
             if (attacker.uuid == player.uuid) {
@@ -58,7 +58,7 @@ class RiftDamageListener : EventRegistrar {
 
         if (amount >= player.health + player.additionalHearts) {
             event.isCancelled = true
-            EliminationService.eliminate(
+            RiftEliminationService.eliminate(
                 victim,
                 RiftDamage.causeOf(damage.type),
                 attacker?.uuid?.takeIf { it != player.uuid }

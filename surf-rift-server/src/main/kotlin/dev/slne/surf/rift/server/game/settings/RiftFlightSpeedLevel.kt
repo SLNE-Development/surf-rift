@@ -1,6 +1,6 @@
 package dev.slne.surf.rift.server.game.settings
 
-enum class FlightSpeed(val blocksPerTick: Double) {
+enum class RiftFlightSpeedLevel(val blocksPerTick: Double) {
     SLOW(0.55),
     NORMAL(0.75),
     FAST(1.0);

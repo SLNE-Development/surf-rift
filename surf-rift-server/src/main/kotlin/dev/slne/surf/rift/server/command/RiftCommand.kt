@@ -4,13 +4,13 @@ import dev.slne.surf.api.core.messages.adventure.sendText
 import dev.slne.surf.api.minestom.command.dsl.*
 import dev.slne.surf.rift.common.stats.RiftGameEndReason
 import dev.slne.surf.rift.server.game.RiftGame
-import dev.slne.surf.rift.server.game.flight.PhantomFlight
-import dev.slne.surf.rift.server.game.loot.LootChests
-import dev.slne.surf.rift.server.game.player.RiftPlayers
+import dev.slne.surf.rift.server.game.flight.RiftPhantomFlight
+import dev.slne.surf.rift.server.game.loot.LootChestRegistry
+import dev.slne.surf.rift.server.game.player.RiftPlayerManager
 import dev.slne.surf.rift.server.game.zone.ZoneController
-import dev.slne.surf.rift.server.message.riftTitle
-import dev.slne.surf.rift.server.message.send
 import dev.slne.surf.rift.server.permission.PermissionList
+import dev.slne.surf.rift.server.util.riftTitle
+import dev.slne.surf.rift.server.util.send
 import net.minestom.server.entity.Player
 
 fun riftCommand() = commandTree("rift") {
@@ -30,10 +30,10 @@ fun riftCommand() = commandTree("rift") {
             variableValue(RiftGame.map.id)
             appendNewline()
             spacer("Lebend: ")
-            variableValue(RiftPlayers.alive.size)
+            variableValue(RiftPlayerManager.alive.size)
             darkSpacer(" | ")
             spacer("Fässer ungeöffnet: ")
-            variableValue(LootChests.remaining)
+            variableValue(LootChestRegistry.remaining)
             darkSpacer(" | ")
             spacer("Zone: ")
             variableValue(ZoneController.diameter.toInt())
@@ -62,7 +62,7 @@ fun riftCommand() = commandTree("rift") {
 
     literalArgument("jump") {
         playerExecutor { player, _ ->
-            if (!PhantomFlight.jump(player, forced = true)) {
+            if (!RiftPhantomFlight.jump(player, forced = true)) {
                 player.send { error("Du fliegst gerade nicht auf einem Phantom.") }
             }
         }

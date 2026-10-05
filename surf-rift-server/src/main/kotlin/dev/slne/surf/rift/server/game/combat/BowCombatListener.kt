@@ -4,8 +4,8 @@ import dev.slne.surf.api.core.messages.adventure.key
 import dev.slne.surf.api.core.messages.adventure.sound
 import dev.slne.surf.api.minestom.event.EventRegistrar
 import dev.slne.surf.rift.server.game.RiftGame
+import dev.slne.surf.rift.server.game.player.RiftPlayerManager
 import dev.slne.surf.rift.server.game.player.RiftPlayerState
-import dev.slne.surf.rift.server.game.player.RiftPlayers
 import dev.slne.surf.rift.server.sound.RiftSounds
 import net.kyori.adventure.sound.Sound
 import net.minestom.server.ServerFlag
@@ -45,7 +45,7 @@ class BowCombatListener : EventRegistrar {
         }
 
         val player = event.player
-        val riftPlayer = RiftPlayers[player]
+        val riftPlayer = RiftPlayerManager[player]
         if (!RiftGame.phase.running || (riftPlayer.state != RiftPlayerState.ALIVE && riftPlayer.state != RiftPlayerState.GLIDING)) {
             return
         }
@@ -89,7 +89,11 @@ class BowCombatListener : EventRegistrar {
         }
 
         val shooter = arrow.shooter as? Player
-        if (shooter == null || !AttackTargets.canAttack(shooter, target) || target.isDead || target.isInvulnerable) {
+        if (shooter == null || !AttackTargets.canAttack(
+                shooter,
+                target
+            ) || target.isDead || target.isInvulnerable
+        ) {
             event.isCancelled = true
             return
         }
@@ -97,7 +101,8 @@ class BowCombatListener : EventRegistrar {
         val blocksPerTick = arrow.velocity.length() / ServerFlag.SERVER_TICKS_PER_SECOND
         val base = ceil(blocksPerTick * arrow.getTag(arrowDamageTag)).toInt().coerceAtLeast(0)
         val critical = (arrow.entityMeta as AbstractArrowMeta).isCritical
-        val amount = if (critical) (base + ThreadLocalRandom.current().nextInt(base / 2 + 2)).toFloat() else base.toFloat()
+        val amount = if (critical) (base + ThreadLocalRandom.current()
+            .nextInt(base / 2 + 2)).toFloat() else base.toFloat()
 
         val result = target.hurt(Damage(DamageType.ARROW, arrow, shooter, arrow.position, amount))
 
@@ -114,7 +119,8 @@ class BowCombatListener : EventRegistrar {
         val horizontal = arrow.velocity.withY(0.0)
 
         if (punch > 0 && !horizontal.isZero) {
-            val push = horizontal.normalize().mul(punch * 0.6, 0.0, punch * 0.6).withY(0.1).mul(ServerFlag.SERVER_TICKS_PER_SECOND.toDouble())
+            val push = horizontal.normalize().mul(punch * 0.6, 0.0, punch * 0.6).withY(0.1)
+                .mul(ServerFlag.SERVER_TICKS_PER_SECOND.toDouble())
             target.velocity = target.velocity.add(push)
         }
 
@@ -135,7 +141,11 @@ class BowCombatListener : EventRegistrar {
 
     private fun Vec.withSpread(): Vec {
         val random = ThreadLocalRandom.current()
-        return Vec(x() + random.nextGaussian() * 0.0075, y() + random.nextGaussian() * 0.0075, z() + random.nextGaussian() * 0.0075)
+        return Vec(
+            x() + random.nextGaussian() * 0.0075,
+            y() + random.nextGaussian() * 0.0075,
+            z() + random.nextGaussian() * 0.0075
+        )
     }
 
     private fun Player.consumeArrow(bow: ItemStack): Boolean {
@@ -143,7 +153,9 @@ class BowCombatListener : EventRegistrar {
             return true
         }
 
-        val slot = (0 until inventory.size).firstOrNull { inventory.getItemStack(it).material() == Material.ARROW } ?: return false
+        val slot = (0 until inventory.size).firstOrNull {
+            inventory.getItemStack(it).material() == Material.ARROW
+        } ?: return false
         inventory.setItemStack(slot, inventory.getItemStack(slot).consume(1))
         return true
     }

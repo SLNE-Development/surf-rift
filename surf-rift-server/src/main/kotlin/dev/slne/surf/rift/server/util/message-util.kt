@@ -1,9 +1,8 @@
-package dev.slne.surf.rift.server.message
+package dev.slne.surf.rift.server.util
 
 import dev.slne.surf.api.core.font.toSmallCaps
 import dev.slne.surf.api.core.messages.adventure.buildText
 import dev.slne.surf.api.core.messages.builder.SurfComponentBuilder
-import dev.slne.surf.rift.server.util.RiftColors
 import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.TextDecoration

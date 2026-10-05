@@ -1,23 +1,23 @@
 package dev.slne.surf.rift.server.game.death
 
-import dev.slne.surf.rift.server.message.actionBar
-import net.kyori.adventure.text.format.TextDecoration
 import dev.slne.surf.rift.server.game.RiftGame
+import dev.slne.surf.rift.server.game.player.RiftPlayerManager
 import dev.slne.surf.rift.server.game.player.RiftPlayerState
-import dev.slne.surf.rift.server.game.player.RiftPlayers
-import dev.slne.surf.rift.server.message.itemText
-import dev.slne.surf.rift.server.message.send
-import dev.slne.surf.rift.server.util.RiftItemAction
-import dev.slne.surf.rift.server.util.actionItem
+import dev.slne.surf.rift.server.util.actionBar
+import dev.slne.surf.rift.server.util.item.RiftItemAction
+import dev.slne.surf.rift.server.util.item.actionItem
+import dev.slne.surf.rift.server.util.itemText
 import dev.slne.surf.rift.server.util.resetPlayerState
+import dev.slne.surf.rift.server.util.send
+import net.kyori.adventure.text.format.TextDecoration
 import net.minestom.server.coordinate.Pos
 import net.minestom.server.entity.GameMode
 import net.minestom.server.entity.Player
 import net.minestom.server.item.Material
 
-object SpectatorService {
+object RiftSpectatorService {
     fun makeSpectator(player: Player, position: Pos?) {
-        val riftPlayer = RiftPlayers[player]
+        val riftPlayer = RiftPlayerManager[player]
         riftPlayer.state = RiftPlayerState.SPECTATOR
 
         player.vehicle?.removePassenger(player)
@@ -50,20 +50,35 @@ object SpectatorService {
         inventory.clear()
         inventory.setItemStack(
             0,
-            actionItem(Material.COMPASS, RiftItemAction.SPECTATE_MENU, itemText { secondary("Spieler beobachten") }, listOf(itemText { spacer("Teleportiere dich zu einem lebenden Spieler.") }))
+            actionItem(
+                Material.COMPASS,
+                RiftItemAction.SPECTATE_MENU,
+                itemText { secondary("Spieler beobachten") },
+                listOf(itemText { spacer("Teleportiere dich zu einem lebenden Spieler.") })
+            )
         )
         inventory.setItemStack(
             1,
-            actionItem(Material.ENDER_EYE, RiftItemAction.SPECTATE_NEXT, itemText { primary("Nächster Spieler") }, listOf(itemText { spacer("Springe zum nächsten lebenden Spieler.") }))
+            actionItem(
+                Material.ENDER_EYE,
+                RiftItemAction.SPECTATE_NEXT,
+                itemText { primary("Nächster Spieler") },
+                listOf(itemText { spacer("Springe zum nächsten lebenden Spieler.") })
+            )
         )
         inventory.setItemStack(
             8,
-            actionItem(Material.RED_BED, RiftItemAction.LEAVE, itemText { error("Runde verlassen") }, listOf(itemText { spacer("Verlässt den Server.") }))
+            actionItem(
+                Material.RED_BED,
+                RiftItemAction.LEAVE,
+                itemText { error("Runde verlassen") },
+                listOf(itemText { spacer("Verlässt den Server.") })
+            )
         )
     }
 
     fun spectateNext(player: Player) {
-        val alive = RiftPlayers.alive.mapNotNull { it.playerOrNull }
+        val alive = RiftPlayerManager.alive.mapNotNull { it.playerOrNull }
         if (alive.isEmpty()) {
             player.send { error("Es lebt gerade niemand, dem du zusehen könntest.") }
             return

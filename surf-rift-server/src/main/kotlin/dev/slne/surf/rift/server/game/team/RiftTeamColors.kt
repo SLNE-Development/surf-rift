@@ -4,7 +4,11 @@ import net.kyori.adventure.text.format.NamedTextColor
 import net.minestom.server.color.TeamColor
 import net.minestom.server.item.Material
 
-enum class RiftTeamPalette(val textColor: NamedTextColor, val teamColor: TeamColor, val material: Material) {
+enum class RiftTeamColors(
+    val textColor: NamedTextColor,
+    val teamColor: TeamColor,
+    val material: Material
+) {
     RED(NamedTextColor.RED, TeamColor.RED, Material.RED_WOOL),
     BLUE(NamedTextColor.BLUE, TeamColor.BLUE, Material.BLUE_WOOL),
     GREEN(NamedTextColor.GREEN, TeamColor.GREEN, Material.LIME_WOOL),

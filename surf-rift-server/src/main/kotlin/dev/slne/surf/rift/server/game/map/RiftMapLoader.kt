@@ -16,10 +16,11 @@ import java.util.concurrent.CompletableFuture
 import kotlin.io.path.Path
 import kotlin.io.path.isDirectory
 
-object MapLoader {
+object RiftMapLoader {
     private val logger = ComponentLogger.logger("RiftMapLoader")
 
-    fun worldPath(folder: String): Path = Path(EnvVariables.RIFT_MAPS_DIRECTORY.string()).resolve(folder)
+    fun worldPath(folder: String): Path =
+        Path(EnvVariables.RIFT_MAPS_DIRECTORY.string()).resolve(folder)
 
     fun load(folder: String, fallback: Generator?): InstanceContainer {
         val path = worldPath(folder)
@@ -30,7 +31,10 @@ object MapLoader {
             manager.createInstanceContainer(AnvilLoader(path, key("minecraft:overworld")))
         } else {
             checkNotNull(fallback) { "World folder ${path.toAbsolutePath()} does not exist and there is no fallback generator" }
-            logger.warn("World folder {} does not exist, generating a fallback world instead", path.toAbsolutePath())
+            logger.warn(
+                "World folder {} does not exist, generating a fallback world instead",
+                path.toAbsolutePath()
+            )
             manager.createInstanceContainer().apply { setGenerator(fallback) }
         }
 

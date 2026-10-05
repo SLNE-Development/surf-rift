@@ -9,10 +9,13 @@ import net.minestom.server.item.enchant.Enchantment
 import net.minestom.server.potion.PotionType
 import net.minestom.server.registry.RegistryKey
 
-object LootTables {
+object LootTableRegistry {
     private fun item(material: Material) = ItemStack.of(material)
 
-    private fun enchanted(material: Material, vararg enchantments: Pair<RegistryKey<Enchantment>, Int>) =
+    private fun enchanted(
+        material: Material,
+        vararg enchantments: Pair<RegistryKey<Enchantment>, Int>
+    ) =
         ItemStack.builder(material)
             .set(DataComponents.ENCHANTMENTS, EnchantmentList(mapOf(*enchantments)))
             .build()

@@ -1,6 +1,7 @@
 package dev.slne.surf.rift.server.game
 
 import dev.slne.surf.api.core.messages.Colors
+import dev.slne.surf.api.core.messages.adventure.buildText
 import dev.slne.surf.api.minestom.coroutine.minestomScope
 import dev.slne.surf.api.minestom.coroutine.ticks
 import dev.slne.surf.rift.common.stats.RiftGameEndReason
@@ -8,31 +9,30 @@ import dev.slne.surf.rift.server.RiftServer
 import dev.slne.surf.rift.server.env.EnvVariables
 import dev.slne.surf.rift.server.game.boarding.BoardingCinematic
 import dev.slne.surf.rift.server.game.combat.Healing
-import dev.slne.surf.rift.server.game.death.EliminationService
-import dev.slne.surf.rift.server.game.flight.PhantomFlight
-import dev.slne.surf.rift.server.game.glide.GliderManager
+import dev.slne.surf.rift.server.game.death.RiftEliminationService
+import dev.slne.surf.rift.server.game.flight.RiftPhantomFlight
+import dev.slne.surf.rift.server.game.flight.glide.RiftGliderManager
 import dev.slne.surf.rift.server.game.lobby.LobbyItems
 import dev.slne.surf.rift.server.game.lobby.RiftLobby
-import dev.slne.surf.rift.server.game.loot.LootChests
-import dev.slne.surf.rift.server.game.map.MapLoader
+import dev.slne.surf.rift.server.game.loot.LootChestRegistry
 import dev.slne.surf.rift.server.game.map.RiftMap
-import dev.slne.surf.rift.server.game.map.RiftMaps
+import dev.slne.surf.rift.server.game.map.RiftMapLoader
+import dev.slne.surf.rift.server.game.map.RiftMapRegistry
 import dev.slne.surf.rift.server.game.player.RiftPlayer
+import dev.slne.surf.rift.server.game.player.RiftPlayerManager
 import dev.slne.surf.rift.server.game.player.RiftPlayerState
-import dev.slne.surf.rift.server.game.player.RiftPlayers
 import dev.slne.surf.rift.server.game.settings.RiftSettings
 import dev.slne.surf.rift.server.game.team.RiftTeam
 import dev.slne.surf.rift.server.game.team.RiftTeams
 import dev.slne.surf.rift.server.game.zone.ZoneController
 import dev.slne.surf.rift.server.hud.RiftHud
 import dev.slne.surf.rift.server.menu.closeAllViews
-import dev.slne.surf.api.core.messages.adventure.buildText
-import dev.slne.surf.rift.server.message.riftTitle
-import dev.slne.surf.rift.server.message.send
 import dev.slne.surf.rift.server.model.ModelLoader
 import dev.slne.surf.rift.server.sound.RiftSounds
 import dev.slne.surf.rift.server.stats.RiftStatsReporter
 import dev.slne.surf.rift.server.tab.RiftTablist
+import dev.slne.surf.rift.server.util.riftTitle
+import dev.slne.surf.rift.server.util.send
 import dev.slne.surf.rift.server.visibility.RiftVisibility
 import dev.slne.surf.rift.server.visual.CountdownTitle
 import dev.slne.surf.rift.server.visual.ScreenEffects
@@ -83,15 +83,15 @@ object RiftGame {
         ModelLoader.init()
         RiftLobby.create()
 
-        map = RiftMaps.selected()
-        instance = MapLoader.load(map.worldFolder, map.fallbackGenerator)
+        map = RiftMapRegistry.selected()
+        instance = RiftMapLoader.load(map.worldFolder, map.fallbackGenerator)
         ZoneController.init(instance, map)
 
         if (EnvVariables.RIFT_PRELOAD_CHUNKS.boolean()) {
-            MapLoader.preload(instance, map.center, map.borderDiameter / 2 + 32)
+            RiftMapLoader.preload(instance, map.center, map.borderDiameter / 2 + 32)
         }
 
-        LootChests.spawn(instance, map)
+        LootChestRegistry.spawn(instance, map)
 
         tickTask = MinecraftServer.getSchedulerManager().buildTask(::tick)
             .repeat(TaskSchedule.tick(1))
@@ -107,8 +107,8 @@ object RiftGame {
 
     fun shutdown() {
         tickTask?.cancel()
-        GliderManager.removeAll()
-        PhantomFlight.stop()
+        RiftGliderManager.removeAll()
+        RiftPhantomFlight.stop()
         BoardingCinematic.cancel()
     }
 
@@ -120,7 +120,7 @@ object RiftGame {
             else -> Unit
         }
 
-        GliderManager.tick()
+        RiftGliderManager.tick()
         RiftHud.tick()
     }
 
@@ -210,7 +210,7 @@ object RiftGame {
     private fun beginBoarding(players: List<Player>) {
         phase = RiftPhase.BOARDING
 
-        val riftPlayers = players.map { RiftPlayers[it] }
+        val riftPlayers = players.map { RiftPlayerManager[it] }
         riftPlayers.forEach {
             it.participant = true
             it.state = RiftPlayerState.BOARDING
@@ -235,7 +235,7 @@ object RiftGame {
         startedAtMillis = System.currentTimeMillis()
 
         ZoneController.start()
-        PhantomFlight.start(RiftPlayers.alive.mapNotNull { it.playerOrNull })
+        RiftPhantomFlight.start(RiftPlayerManager.alive.mapNotNull { it.playerOrNull })
         RiftVisibility.refreshAll()
         RiftTablist.refresh()
 
@@ -257,7 +257,7 @@ object RiftGame {
     private fun tickRunning() {
         gameTicks++
 
-        PhantomFlight.tick()
+        RiftPhantomFlight.tick()
         ZoneController.tick(gameTicks, durationTicks)
         Healing.tick()
 
@@ -277,7 +277,7 @@ object RiftGame {
         checkForWinner()
 
         if (phase.running && gameTicks >= durationTicks + 120 * 20) {
-            val alive = RiftPlayers.alive
+            val alive = RiftPlayerManager.alive
             val bestTeam = if (RiftTeams.enabled) RiftTeams.aliveTeams().maxByOrNull { team ->
                 team.riftPlayers.filter { it.alive }
                     .sumOf { (it.playerOrNull?.health ?: 0f).toDouble() }
@@ -290,7 +290,7 @@ object RiftGame {
     }
 
     fun aliveSides(): Int =
-        if (RiftTeams.enabled) RiftTeams.aliveTeams().size else RiftPlayers.alive.size
+        if (RiftTeams.enabled) RiftTeams.aliveTeams().size else RiftPlayerManager.alive.size
 
     fun checkForWinner() {
         if (!phase.running) {
@@ -308,7 +308,7 @@ object RiftGame {
             if (RiftTeams.enabled) {
                 end(RiftGameEndReason.LAST_SURVIVOR, RiftTeams.aliveTeams().first(), null)
             } else {
-                end(RiftGameEndReason.LAST_SURVIVOR, null, RiftPlayers.alive.first())
+                end(RiftGameEndReason.LAST_SURVIVOR, null, RiftPlayerManager.alive.first())
             }
         }
     }
@@ -324,11 +324,11 @@ object RiftGame {
         winnerPlayer = player
         endingTicks = EnvVariables.RIFT_END_DELAY_SECONDS.int().coerceAtLeast(3) * 20
 
-        PhantomFlight.stop()
+        RiftPhantomFlight.stop()
         ZoneController.stop()
 
         val winners = winningPlayers()
-        EliminationService.assignFinalPlacements(winners)
+        RiftEliminationService.assignFinalPlacements(winners)
 
         val winnerName = winnerDisplayName()
         val online = MinecraftServer.getConnectionManager().onlinePlayers
@@ -339,7 +339,12 @@ object RiftGame {
                 ScreenEffects.victory(
                     viewer,
                     if (won) {
-                        buildText { variableValue("Du hast den Rift gewonnen!", TextDecoration.BOLD) }
+                        buildText {
+                            variableValue(
+                                "Du hast den Rift gewonnen!",
+                                TextDecoration.BOLD
+                            )
+                        }
                     } else {
                         buildText {
                             spacer("Sieger: ")
@@ -429,5 +434,6 @@ object RiftGame {
         }
     }
 
-    fun participantsOnline(): List<Player> = RiftPlayers.participants.mapNotNull { it.playerOrNull }
+    fun participantsOnline(): List<Player> =
+        RiftPlayerManager.participants.mapNotNull { it.playerOrNull }
 }

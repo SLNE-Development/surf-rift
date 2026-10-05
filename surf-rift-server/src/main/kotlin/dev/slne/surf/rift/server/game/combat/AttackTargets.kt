@@ -1,9 +1,9 @@
 package dev.slne.surf.rift.server.game.combat
 
 import dev.slne.surf.rift.server.game.RiftGame
-import dev.slne.surf.rift.server.game.glide.GliderManager
+import dev.slne.surf.rift.server.game.flight.glide.RiftGliderManager
+import dev.slne.surf.rift.server.game.player.RiftPlayerManager
 import dev.slne.surf.rift.server.game.player.RiftPlayerState
-import dev.slne.surf.rift.server.game.player.RiftPlayers
 import dev.slne.surf.rift.server.game.team.RiftTeams
 import net.minestom.server.MinecraftServer
 import net.minestom.server.entity.Entity
@@ -16,7 +16,7 @@ object AttackTargets {
             return target
         }
 
-        val owner = GliderManager.ownerOf(target) ?: return target as? LivingEntity
+        val owner = RiftGliderManager.ownerOf(target) ?: return target as? LivingEntity
         return MinecraftServer.getConnectionManager().getOnlinePlayerByUuid(owner)
     }
 
@@ -25,7 +25,7 @@ object AttackTargets {
             return false
         }
 
-        val attackerState = RiftPlayers[attacker]
+        val attackerState = RiftPlayerManager[attacker]
         if (attackerState.state != RiftPlayerState.ALIVE && attackerState.state != RiftPlayerState.GLIDING) {
             return false
         }
@@ -37,7 +37,7 @@ object AttackTargets {
             return false
         }
 
-        val victimState = RiftPlayers[victim]
+        val victimState = RiftPlayerManager[victim]
         if (victimState.state != RiftPlayerState.ALIVE && victimState.state != RiftPlayerState.GLIDING) {
             return false
         }

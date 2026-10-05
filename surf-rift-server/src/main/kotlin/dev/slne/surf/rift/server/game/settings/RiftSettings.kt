@@ -7,10 +7,10 @@ object RiftSettings {
     val durationOptions = listOf(300, 600, 900, 1200, 1500, 1800)
 
     var durationSeconds: Int = EnvVariables.RIFT_GAME_DURATION_SECONDS.int().coerceIn(120, 3600)
-    var lootLevel: LootLevel = LootLevel.NORMAL
+    var riftLootLevel: RiftLootLevel = RiftLootLevel.NORMAL
     var fallDamage: Boolean = true
     var healOnKill: Boolean = true
-    var flightSpeed: FlightSpeed = FlightSpeed.NORMAL
+    var riftFlightSpeedLevel: RiftFlightSpeedLevel = RiftFlightSpeedLevel.NORMAL
 
     var locked = false
 
@@ -22,9 +22,9 @@ object RiftSettings {
 
     fun snapshot() = RiftGameSettingsSnapshot(
         durationSeconds = durationSeconds,
-        lootLevel = lootLevel.name,
+        lootLevel = riftLootLevel.name,
         fallDamage = fallDamage,
         healOnKill = healOnKill,
-        flightSpeed = flightSpeed.name,
+        flightSpeed = riftFlightSpeedLevel.name,
     )
 }

@@ -2,19 +2,19 @@ package dev.slne.surf.rift.server.hud
 
 import dev.slne.surf.rift.server.game.RiftGame
 import dev.slne.surf.rift.server.game.RiftPhase
-import dev.slne.surf.rift.server.game.flight.PhantomFlight
-import dev.slne.surf.rift.server.game.glide.GliderManager
+import dev.slne.surf.rift.server.game.flight.RiftPhantomFlight
+import dev.slne.surf.rift.server.game.flight.glide.RiftGliderManager
 import dev.slne.surf.rift.server.game.host.RiftHost
 import dev.slne.surf.rift.server.game.lobby.RiftLobby
 import dev.slne.surf.rift.server.game.player.RiftPlayer
+import dev.slne.surf.rift.server.game.player.RiftPlayerManager
 import dev.slne.surf.rift.server.game.player.RiftPlayerState
-import dev.slne.surf.rift.server.game.player.RiftPlayers
 import dev.slne.surf.rift.server.game.team.RiftTeams
 import dev.slne.surf.rift.server.game.zone.ZoneController
 import dev.slne.surf.rift.server.game.zone.ZoneState
 import dev.slne.surf.rift.server.hud.util.HudColors
 import dev.slne.surf.rift.server.hud.util.HudRow
-import dev.slne.surf.rift.server.message.formatClock
+import dev.slne.surf.rift.server.util.formatClock
 import net.kyori.adventure.bossbar.BossBar
 import net.kyori.adventure.text.Component
 import net.minestom.server.MinecraftServer
@@ -62,7 +62,7 @@ object RiftHud {
     }
 
     private fun compose(player: Player): Component {
-        val riftPlayer = RiftPlayers[player]
+        val riftPlayer = RiftPlayerManager[player]
         val (left, center, right) = topRow(riftPlayer)
         val top = HudBuilder.anchored(HudRow.TOP, left, center, right)
         val bottom = HudBuilder.centered(HudRow.BOTTOM, bottomRow(player, riftPlayer))
@@ -113,7 +113,7 @@ object RiftHud {
         return Triple(
             { labelled("Punkte", riftPlayer.points.toString()) },
             { labelled("Zeit", formatClock(RiftGame.remainingSeconds)) },
-            { labelled("Übrig", RiftPlayers.alive.size.toString()) },
+            { labelled("Übrig", RiftPlayerManager.alive.size.toString()) },
         )
     }
 
@@ -148,7 +148,7 @@ object RiftHud {
             RiftPlayerState.FLYING -> flightPill()
 
             RiftPlayerState.GLIDING -> {
-                val altitude = GliderManager.find(player.uuid)?.altitude ?: 0
+                val altitude = RiftGliderManager.find(player.uuid)?.altitude ?: 0
                 return { labelled("Höhe", "${altitude}m") }
             }
 
@@ -159,7 +159,7 @@ object RiftHud {
     }
 
     private fun flightPill(): HudPill {
-        if (!PhantomFlight.canJump) {
+        if (!RiftPhantomFlight.canJump) {
             return { message("Gleich kannst du abspringen", HudColors.MUTED) }
         }
 
@@ -167,7 +167,7 @@ object RiftHud {
             pill {
                 smallCaps("Shift ", HudColors.TEXT)
                 smallCaps("zum Abspringen ", HudColors.LABEL)
-                text(formatClock(PhantomFlight.secondsLeft), HudColors.TEXT)
+                text(formatClock(RiftPhantomFlight.secondsLeft), HudColors.TEXT)
             }
         }
     }

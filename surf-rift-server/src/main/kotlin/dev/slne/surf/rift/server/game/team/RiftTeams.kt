@@ -2,7 +2,7 @@ package dev.slne.surf.rift.server.game.team
 
 import dev.slne.surf.rift.server.env.EnvVariables
 import dev.slne.surf.rift.server.game.player.RiftPlayer
-import dev.slne.surf.rift.server.game.player.RiftPlayers
+import dev.slne.surf.rift.server.game.player.RiftPlayerManager
 import kotlin.math.ceil
 
 object RiftTeams {
@@ -13,8 +13,9 @@ object RiftTeams {
         if (!enabled) {
             emptyList()
         } else {
-            val count = ceil(EnvVariables.RIFT_MAX_PLAYERS.int() / teamSize.toDouble()).toInt().coerceAtLeast(2)
-            List(count) { RiftTeam(it + 1, RiftTeamPalette.of(it)) }
+            val count = ceil(EnvVariables.RIFT_MAX_PLAYERS.int() / teamSize.toDouble()).toInt()
+                .coerceAtLeast(2)
+            List(count) { RiftTeam(it + 1, RiftTeamColors.of(it)) }
         }
     }
 
@@ -66,6 +67,6 @@ object RiftTeams {
 
     fun teammatesOf(player: RiftPlayer): List<RiftPlayer> {
         val team = player.team ?: return emptyList()
-        return team.members.filter { it != player.uuid }.mapNotNull { RiftPlayers.find(it) }
+        return team.members.filter { it != player.uuid }.mapNotNull { RiftPlayerManager.find(it) }
     }
 }

@@ -1,16 +1,16 @@
 package dev.slne.surf.rift.server.game.zone
 
-import dev.slne.surf.rift.server.message.actionBar
 import dev.slne.surf.api.core.messages.builder.SurfComponentBuilder
-import net.kyori.adventure.text.format.TextDecoration
 import dev.slne.surf.rift.server.game.combat.RiftDamage
 import dev.slne.surf.rift.server.game.map.RiftMap
+import dev.slne.surf.rift.server.game.player.RiftPlayerManager
 import dev.slne.surf.rift.server.game.player.RiftPlayerState
-import dev.slne.surf.rift.server.game.player.RiftPlayers
-import dev.slne.surf.rift.server.message.send
 import dev.slne.surf.rift.server.sound.RiftSounds
+import dev.slne.surf.rift.server.util.actionBar
+import dev.slne.surf.rift.server.util.send
 import dev.slne.surf.rift.server.visual.ScreenEffects
 import net.kyori.adventure.sound.Sound
+import net.kyori.adventure.text.format.TextDecoration
 import net.minestom.server.color.Color
 import net.minestom.server.coordinate.Pos
 import net.minestom.server.coordinate.Vec
@@ -65,7 +65,8 @@ object ZoneController {
         active = false
     }
 
-    private fun scaledDiameter(scale: Double) = finalDiameter + (initialDiameter - finalDiameter) * scale
+    private fun scaledDiameter(scale: Double) =
+        finalDiameter + (initialDiameter - finalDiameter) * scale
 
     fun tick(gameTicks: Int, durationTicks: Int) {
         if (!active) {
@@ -87,9 +88,15 @@ object ZoneController {
             overtimeTicks++
         } else {
             state = if (phase.shrinking) ZoneState.SHRINKING else ZoneState.HOLDING
-            secondsUntilChange = ((phase.endFraction * durationTicks - gameTicks) / 20).toInt().coerceAtLeast(0)
+            secondsUntilChange =
+                ((phase.endFraction * durationTicks - gameTicks) / 20).toInt().coerceAtLeast(0)
 
-            if (!phase.shrinking && secondsUntilChange in listOf(30, 10, 5) && gameTicks % 20 == 0) {
+            if (!phase.shrinking && secondsUntilChange in listOf(
+                    30,
+                    10,
+                    5
+                ) && gameTicks % 20 == 0
+            ) {
                 broadcast {
                     warning("Die Zone beginnt in ")
                     variableValue("$secondsUntilChange Sekunden")
@@ -118,9 +125,15 @@ object ZoneController {
         val target = scaledDiameter(phase.toScale)
         val current = instance.worldBorder.diameter()
         instance.setWorldBorder(instance.worldBorder.withDiameter(target), seconds)
-        instance.sendGroupedPacket(WorldBorderLerpSizePacket(current, target, (seconds * 20).toLong()))
+        instance.sendGroupedPacket(
+            WorldBorderLerpSizePacket(
+                current,
+                target,
+                (seconds * 20).toLong()
+            )
+        )
 
-        RiftPlayers.participants.mapNotNull { it.playerOrNull }.forEach {
+        RiftPlayerManager.participants.mapNotNull { it.playerOrNull }.forEach {
             it.playSound(RiftSounds.ZONE_SHRINK, Sound.Emitter.self())
             ScreenEffects.zone(it)
         }
@@ -132,7 +145,7 @@ object ZoneController {
     }
 
     private fun broadcast(block: SurfComponentBuilder.() -> Unit) {
-        RiftPlayers.participants.mapNotNull { it.playerOrNull }.forEach {
+        RiftPlayerManager.participants.mapNotNull { it.playerOrNull }.forEach {
             it.send(block)
             it.playSound(RiftSounds.ZONE_WARNING, Sound.Emitter.self())
         }
@@ -146,7 +159,7 @@ object ZoneController {
 
         if (!verticalActive) {
             verticalActive = true
-            RiftPlayers.participants.mapNotNull { it.playerOrNull }.forEach {
+            RiftPlayerManager.participants.mapNotNull { it.playerOrNull }.forEach {
                 it.send {
                     info("Die vertikale Zone ist aktiv!", TextDecoration.BOLD)
                     warning(" Sie drückt alle Spieler auf Bodenhöhe der Kartenmitte.")
@@ -181,7 +194,8 @@ object ZoneController {
         }
     }
 
-    fun distanceOutside(position: Pos) = max(horizontalDistanceOutside(position), verticalDistanceOutside(position))
+    fun distanceOutside(position: Pos) =
+        max(horizontalDistanceOutside(position), verticalDistanceOutside(position))
 
     fun clampHorizontal(position: Pos): Pos {
         if (!::instance.isInitialized) {
@@ -200,7 +214,7 @@ object ZoneController {
     private fun damageOutside() {
         val overtimeMultiplier = 1.0 + overtimeTicks / 200.0
 
-        for (riftPlayer in RiftPlayers.alive) {
+        for (riftPlayer in RiftPlayerManager.alive) {
             if (riftPlayer.state != RiftPlayerState.ALIVE && riftPlayer.state != RiftPlayerState.GLIDING) continue
             val player = riftPlayer.playerOrNull ?: continue
             val distance = distanceOutside(player.position)
@@ -222,7 +236,7 @@ object ZoneController {
             return
         }
 
-        for (riftPlayer in RiftPlayers.participants) {
+        for (riftPlayer in RiftPlayerManager.participants) {
             val player = riftPlayer.playerOrNull ?: continue
             if (player.instance != instance) continue
             renderPlane(player, verticalMinY)
@@ -240,7 +254,15 @@ object ZoneController {
         for (dx in -10..10 step 2) {
             for (dz in -10..10 step 2) {
                 player.sendPacket(
-                    ParticlePacket(dust, false, false, Vec(base.blockX() + dx + 0.5, y, base.blockZ() + dz + 0.5), Vec.ZERO, 0f, 1)
+                    ParticlePacket(
+                        dust,
+                        false,
+                        false,
+                        Vec(base.blockX() + dx + 0.5, y, base.blockZ() + dz + 0.5),
+                        Vec.ZERO,
+                        0f,
+                        1
+                    )
                 )
             }
         }

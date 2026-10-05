@@ -6,7 +6,7 @@ import dev.slne.surf.api.minestom.inventory.framework.open
 import dev.slne.surf.rift.server.game.RiftGame
 import dev.slne.surf.rift.server.game.host.RiftHost
 import dev.slne.surf.rift.server.menu.settingsView
-import dev.slne.surf.rift.server.message.send
+import dev.slne.surf.rift.server.util.send
 
 fun settingsCommand() = commandTree("settings") {
     withAliases("einstellungen")

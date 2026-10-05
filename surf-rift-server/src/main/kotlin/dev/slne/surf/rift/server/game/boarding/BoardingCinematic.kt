@@ -4,7 +4,7 @@ import dev.slne.surf.api.minestom.coroutine.minestomScope
 import dev.slne.surf.api.minestom.coroutine.ticks
 import dev.slne.surf.rift.server.game.lobby.RiftLobby
 import dev.slne.surf.rift.server.game.player.RiftPlayer
-import dev.slne.surf.rift.server.game.player.RiftPlayers
+import dev.slne.surf.rift.server.game.player.RiftPlayerManager
 import dev.slne.surf.rift.server.game.team.RiftTeams
 import dev.slne.surf.rift.server.sound.RiftSounds
 import dev.slne.surf.rift.server.util.freeze
@@ -34,7 +34,12 @@ object BoardingCinematic {
                 player.freeze(true)
                 player.teleport(center)
 
-                val scene = BoardingScene(player, RiftLobby.instance, center, companionsFor(RiftPlayers[player], players))
+                val scene = BoardingScene(
+                    player,
+                    RiftLobby.instance,
+                    center,
+                    companionsFor(RiftPlayerManager[player], players)
+                )
                 scene.spawn()
                 scenes += scene
             }
@@ -84,7 +89,7 @@ object BoardingCinematic {
     }
 
     private fun companionsFor(viewer: RiftPlayer, players: List<Player>): List<RiftPlayer> {
-        val others = players.filter { it.uuid != viewer.uuid }.map { RiftPlayers[it] }
+        val others = players.filter { it.uuid != viewer.uuid }.map { RiftPlayerManager[it] }
         val teammates = others.filter { RiftTeams.areTeammates(viewer, it) }.shuffled()
         val rest = others.filter { !RiftTeams.areTeammates(viewer, it) }.shuffled()
         return (teammates + rest).take(5)

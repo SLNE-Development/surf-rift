@@ -5,14 +5,14 @@ import dev.slne.surf.api.minestom.inventory.framework.view.settings
 import dev.slne.surf.api.minestom.inventory.framework.view.surfView
 import dev.slne.surf.rift.server.game.RiftGame
 import dev.slne.surf.rift.server.game.lobby.LobbyItems
-import dev.slne.surf.rift.server.game.player.RiftPlayers
+import dev.slne.surf.rift.server.game.player.RiftPlayerManager
 import dev.slne.surf.rift.server.game.team.RiftTeam
 import dev.slne.surf.rift.server.game.team.RiftTeams
-import dev.slne.surf.rift.server.message.itemText
-import dev.slne.surf.rift.server.message.send
 import dev.slne.surf.rift.server.sound.RiftSounds
 import dev.slne.surf.rift.server.tab.RiftTablist
-import dev.slne.surf.rift.server.util.menuItem
+import dev.slne.surf.rift.server.util.item.menuItem
+import dev.slne.surf.rift.server.util.itemText
+import dev.slne.surf.rift.server.util.send
 import net.kyori.adventure.sound.Sound
 import net.kyori.adventure.text.Component
 import net.minestom.server.entity.Player
@@ -29,7 +29,7 @@ val teamSelectionView = surfView("Team wählen") {
     onFirstRender {
         RiftTeams.teams.take(27).forEachIndexed { index, team ->
             slot(index / 9 + 1, index % 9 + 1).renderWith {
-                teamItem(team, RiftPlayers[player].team == team)
+                teamItem(team, RiftPlayerManager[player].team == team)
             }.onClick { click ->
                 select(click.player, team)
             }
@@ -41,7 +41,7 @@ val teamSelectionView = surfView("Team wählen") {
                 return@onClick
             }
 
-            RiftTeams.leave(RiftPlayers[click.player])
+            RiftTeams.leave(RiftPlayerManager[click.player])
             click.player.playSound(RiftSounds.UI_CLICK, Sound.Emitter.self())
             changed(click.player)
         }
@@ -54,7 +54,7 @@ private fun select(player: Player, team: RiftTeam) {
         return
     }
 
-    val riftPlayer = RiftPlayers[player]
+    val riftPlayer = RiftPlayerManager[player]
 
     if (riftPlayer.team == team) {
         return
@@ -98,7 +98,7 @@ private fun teamItem(team: RiftTeam, own: Boolean): ItemStack {
         if (team.members.isEmpty()) {
             add(itemText { spacer("Noch keine Mitglieder") })
         } else {
-            team.members.mapNotNull { RiftPlayers.find(it) }.forEach { member ->
+            team.members.mapNotNull { RiftPlayerManager.find(it) }.forEach { member ->
                 add(itemText { text("• ${member.name}", team.color) })
             }
         }

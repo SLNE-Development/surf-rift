@@ -8,7 +8,7 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
 
-data class FlightPath(val start: Vec, val end: Vec) {
+data class RiftFlightPath(val start: Vec, val end: Vec) {
     val length = start.distance(end)
     val direction: Vec = end.sub(start).normalize()
     val yaw = Math.toDegrees(atan2(-direction.x(), direction.z())).toFloat()
@@ -19,16 +19,20 @@ data class FlightPath(val start: Vec, val end: Vec) {
     }
 
     companion object {
-        fun random(map: RiftMap, random: Random = Random.Default): FlightPath {
+        fun random(map: RiftMap, random: Random = Random.Default): RiftFlightPath {
             val radius = map.borderDiameter / 2
             val angle = random.nextDouble(0.0, Math.PI * 2)
             val direction = Vec(cos(angle), 0.0, sin(angle))
             val side = Vec(-direction.z(), 0.0, direction.x())
             val offset = random.nextDouble(-0.3, 0.3) * radius
-            val center = Vec(map.center.x(), map.flightAltitude, map.center.z()).add(side.mul(offset))
+            val center =
+                Vec(map.center.x(), map.flightAltitude, map.center.z()).add(side.mul(offset))
             val halfLength = radius * 0.95
 
-            return FlightPath(center.sub(direction.mul(halfLength)), center.add(direction.mul(halfLength)))
+            return RiftFlightPath(
+                center.sub(direction.mul(halfLength)),
+                center.add(direction.mul(halfLength))
+            )
         }
     }
 }

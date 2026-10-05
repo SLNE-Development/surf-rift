@@ -10,7 +10,7 @@ import net.minestom.server.instance.Instance
 import net.minestom.server.instance.block.Block
 import net.minestom.server.inventory.Inventory
 import net.minestom.server.inventory.InventoryType
-import java.util.UUID
+import java.util.*
 import kotlin.random.Random
 
 class LootChest(
@@ -27,16 +27,23 @@ class LootChest(
     fun spawn(random: Random = Random.Default) {
         instance.setBlock(block, CLOSED)
 
-        val loot = LootTables.of(tier).roll(random, RiftSettings.lootLevel.rollMultiplier)
+        val loot =
+            LootTableRegistry.of(tier).roll(random, RiftSettings.riftLootLevel.rollMultiplier)
         val slots = (0 until inventory.size).shuffled(random)
-        loot.take(slots.size).forEachIndexed { index, item -> inventory.setItemStack(slots[index], item) }
+        loot.take(slots.size)
+            .forEachIndexed { index, item -> inventory.setItemStack(slots[index], item) }
     }
 
     fun open(player: Player): Boolean {
         val first = openedBy.add(player.uuid)
         if (inventory.viewers.isEmpty()) {
             instance.setBlock(block, OPEN)
-            instance.playSound(RiftSounds.BARREL_OPEN, block.x() + 0.5, block.y() + 0.5, block.z() + 0.5)
+            instance.playSound(
+                RiftSounds.BARREL_OPEN,
+                block.x() + 0.5,
+                block.y() + 0.5,
+                block.z() + 0.5
+            )
         }
         player.openInventory(inventory)
         return first
@@ -47,7 +54,12 @@ class LootChest(
             return
         }
         instance.setBlock(block, CLOSED)
-        instance.playSound(RiftSounds.BARREL_CLOSE, block.x() + 0.5, block.y() + 0.5, block.z() + 0.5)
+        instance.playSound(
+            RiftSounds.BARREL_CLOSE,
+            block.x() + 0.5,
+            block.y() + 0.5,
+            block.z() + 0.5
+        )
     }
 
     companion object {

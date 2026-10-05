@@ -1,25 +1,24 @@
 package dev.slne.surf.rift.server.tab
 
-import dev.slne.surf.api.core.messages.adventure.buildText
-import dev.slne.surf.rift.server.message.riftTitle
-import net.kyori.adventure.text.format.NamedTextColor
-import net.kyori.adventure.text.minimessage.MiniMessage
 import dev.slne.surf.api.core.luckperms.LuckPermsAccess
 import dev.slne.surf.api.core.luckperms.prefix
+import dev.slne.surf.api.core.messages.adventure.buildText
 import dev.slne.surf.rift.server.game.RiftGame
 import dev.slne.surf.rift.server.game.RiftPhase
 import dev.slne.surf.rift.server.game.player.RiftPlayer
-import dev.slne.surf.rift.server.game.player.RiftPlayers
+import dev.slne.surf.rift.server.game.player.RiftPlayerManager
 import dev.slne.surf.rift.server.game.team.RiftTeams
 import dev.slne.surf.rift.server.util.RiftColors
+import dev.slne.surf.rift.server.util.riftTitle
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextColor
 import net.kyori.adventure.text.format.TextDecoration
+import net.kyori.adventure.text.minimessage.MiniMessage
 import net.minestom.server.MinecraftServer
 import net.minestom.server.entity.Player
 import net.minestom.server.network.packet.server.play.PlayerInfoUpdatePacket
-import java.util.EnumSet
-import java.util.UUID
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
 object RiftTablist {
@@ -28,7 +27,7 @@ object RiftTablist {
         PlayerInfoUpdatePacket.Action.UPDATE_LIST_ORDER
     )
 
-    private val sent = ConcurrentHashMap<UUID, MutableMap<UUID, TabEntry>>()
+    private val sent = ConcurrentHashMap<UUID, MutableMap<UUID, RiftTablistEntry>>()
     private val lock = Any()
 
     fun refresh(): Unit = synchronized(lock) {
@@ -62,17 +61,17 @@ object RiftTablist {
         sent.values.forEach { it.remove(uuid) }
     }
 
-    private fun entryFor(player: Player): TabEntry {
-        val riftPlayer = RiftPlayers[player]
+    private fun entryFor(player: Player): RiftTablistEntry {
+        val riftPlayer = RiftPlayerManager[player]
         val baseName = nameOf(player, riftPlayer)
 
         if (riftPlayer.spectating || (RiftGame.phase.started && !riftPlayer.participant)) {
-            return TabEntry(baseName.darken(), 1)
+            return RiftTablistEntry(baseName.darken(), 1)
         }
 
         val team = riftPlayer.team
         val order = if (team != null && RiftTeams.enabled) 10_000 - team.id * 10 else 1_000
-        return TabEntry(baseName, order)
+        return RiftTablistEntry(baseName, order)
     }
 
     private fun nameOf(player: Player, riftPlayer: RiftPlayer): Component {
@@ -86,7 +85,8 @@ object RiftTablist {
                 .build()
         }
 
-        val prefix = runCatching { LuckPermsAccess.getUser(player.uuid)?.prefix }.getOrNull().orEmpty()
+        val prefix =
+            runCatching { LuckPermsAccess.getUser(player.uuid)?.prefix }.getOrNull().orEmpty()
         return buildText {
             append(MiniMessage.miniMessage().deserialize(prefix))
             text(player.username, NamedTextColor.WHITE)
@@ -103,9 +103,9 @@ object RiftTablist {
             RiftPhase.ENDING, RiftPhase.CLOSED -> "Rundenende"
         }
 
-        val alive = RiftPlayers.alive.size
+        val alive = RiftPlayerManager.alive.size
         val spectators = MinecraftServer.getConnectionManager().onlinePlayers.count {
-            val state = RiftPlayers[it]
+            val state = RiftPlayerManager[it]
             state.spectating || (RiftGame.phase.started && !state.participant)
         }
 
@@ -131,7 +131,7 @@ object RiftTablist {
         )
     }
 
-    private fun packetEntry(player: Player, entry: TabEntry) = PlayerInfoUpdatePacket.Entry(
+    private fun packetEntry(player: Player, entry: RiftTablistEntry) = PlayerInfoUpdatePacket.Entry(
         player.uuid,
         player.username,
         emptyList(),
@@ -146,7 +146,11 @@ object RiftTablist {
 
     private fun Component.darken(): Component {
         val color = style().color() ?: RiftColors.WHITE
-        val darker = TextColor.color((color.red() * 0.45).toInt(), (color.green() * 0.45).toInt(), (color.blue() * 0.45).toInt())
+        val darker = TextColor.color(
+            (color.red() * 0.45).toInt(),
+            (color.green() * 0.45).toInt(),
+            (color.blue() * 0.45).toInt()
+        )
         return children(children().map { it.darken() }).style(style().color(darker))
     }
 }

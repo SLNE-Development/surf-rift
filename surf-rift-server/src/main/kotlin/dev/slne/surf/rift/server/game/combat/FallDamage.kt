@@ -2,8 +2,8 @@ package dev.slne.surf.rift.server.game.combat
 
 import dev.slne.surf.api.minestom.event.EventRegistrar
 import dev.slne.surf.rift.server.game.RiftGame
+import dev.slne.surf.rift.server.game.player.RiftPlayerManager
 import dev.slne.surf.rift.server.game.player.RiftPlayerState
-import dev.slne.surf.rift.server.game.player.RiftPlayers
 import dev.slne.surf.rift.server.game.settings.RiftSettings
 import net.minestom.server.entity.Player
 import net.minestom.server.entity.attribute.Attribute
@@ -36,7 +36,7 @@ object FallDamage : EventRegistrar {
 
     private fun handleMove(event: PlayerMoveEvent) {
         val player = event.player
-        val riftPlayer = RiftPlayers[player]
+        val riftPlayer = RiftPlayerManager[player]
 
         if (riftPlayer.state != RiftPlayerState.ALIVE || player.isFlying || player.vehicle != null) {
             reset(player)
@@ -46,7 +46,10 @@ object FallDamage : EventRegistrar {
         val instance = player.instance ?: return
         val block = instance.getBlock(event.newPosition, Block.Getter.Condition.TYPE)
 
-        if (block.isLiquid || block.compare(Block.LADDER) || block.compare(Block.VINE) || block.compare(Block.COBWEB) || block.compare(Block.SCAFFOLDING)) {
+        if (block.isLiquid || block.compare(Block.LADDER) || block.compare(Block.VINE) || block.compare(
+                Block.COBWEB
+            ) || block.compare(Block.SCAFFOLDING)
+        ) {
             reset(player)
             return
         }

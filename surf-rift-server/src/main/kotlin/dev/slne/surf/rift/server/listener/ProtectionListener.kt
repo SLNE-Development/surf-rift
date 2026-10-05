@@ -3,10 +3,10 @@ package dev.slne.surf.rift.server.listener
 import dev.slne.surf.api.minestom.event.EventRegistrar
 import dev.slne.surf.rift.server.game.RiftGame
 import dev.slne.surf.rift.server.game.lobby.RiftLobby
+import dev.slne.surf.rift.server.game.player.RiftPlayerManager
 import dev.slne.surf.rift.server.game.player.RiftPlayerState
-import dev.slne.surf.rift.server.game.player.RiftPlayers
 import dev.slne.surf.rift.server.sound.RiftSounds
-import dev.slne.surf.rift.server.util.riftAction
+import dev.slne.surf.rift.server.util.item.riftAction
 import net.kyori.adventure.sound.Sound
 import net.minestom.server.coordinate.Vec
 import net.minestom.server.entity.GameMode
@@ -26,10 +26,17 @@ import java.time.Duration
 
 class ProtectionListener : EventRegistrar {
     override fun register(node: EventNode<Event>) {
-        node.addListener(PlayerBlockBreakEvent::class.java) { if (it.player.gameMode != GameMode.CREATIVE) it.isCancelled = true }
-        node.addListener(PlayerBlockPlaceEvent::class.java) { if (it.player.gameMode != GameMode.CREATIVE) it.isCancelled = true }
+        node.addListener(PlayerBlockBreakEvent::class.java) {
+            if (it.player.gameMode != GameMode.CREATIVE) it.isCancelled = true
+        }
+        node.addListener(PlayerBlockPlaceEvent::class.java) {
+            if (it.player.gameMode != GameMode.CREATIVE) it.isCancelled = true
+        }
         node.addListener(PlayerSwapItemEvent::class.java) { event ->
-            if (event.mainHandItem.riftAction() != null || event.offHandItem.riftAction() != null || !canHandleItems(event.player)) {
+            if (event.mainHandItem.riftAction() != null || event.offHandItem.riftAction() != null || !canHandleItems(
+                    event.player
+                )
+            ) {
                 event.isCancelled = true
             }
         }
@@ -43,7 +50,7 @@ class ProtectionListener : EventRegistrar {
         if (player.gameMode == GameMode.CREATIVE) {
             return true
         }
-        val state = RiftPlayers[player].state
+        val state = RiftPlayerManager[player].state
         return RiftGame.phase.running && (state == RiftPlayerState.ALIVE || state == RiftPlayerState.GLIDING)
     }
 
@@ -52,7 +59,10 @@ class ProtectionListener : EventRegistrar {
             return
         }
         val player = event.player
-        if (event.clickedItem.riftAction() != null || player.inventory.cursorItem.riftAction() != null || !canHandleItems(player)) {
+        if (event.clickedItem.riftAction() != null || player.inventory.cursorItem.riftAction() != null || !canHandleItems(
+                player
+            )
+        ) {
             event.isCancelled = true
         }
     }
@@ -73,7 +83,7 @@ class ProtectionListener : EventRegistrar {
 
     private fun handlePickup(event: PickupItemEvent) {
         val player = event.livingEntity as? Player ?: return
-        if (RiftPlayers[player].state != RiftPlayerState.ALIVE || !RiftGame.phase.running) {
+        if (RiftPlayerManager[player].state != RiftPlayerState.ALIVE || !RiftGame.phase.running) {
             event.isCancelled = true
             return
         }

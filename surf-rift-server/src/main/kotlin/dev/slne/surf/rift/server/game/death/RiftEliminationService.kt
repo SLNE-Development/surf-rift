@@ -1,21 +1,20 @@
 package dev.slne.surf.rift.server.game.death
 
-import dev.slne.surf.rift.server.game.RiftGame
-import dev.slne.surf.rift.server.game.combat.Healing
-import dev.slne.surf.rift.server.game.combat.RiftDamage
-import dev.slne.surf.rift.server.game.flight.PhantomFlight
-import dev.slne.surf.rift.server.game.glide.GliderManager
-import dev.slne.surf.rift.server.game.player.RiftPlayer
-import dev.slne.surf.rift.server.game.player.RiftPlayerState
-import dev.slne.surf.rift.server.game.player.RiftPlayers
-import dev.slne.surf.rift.server.game.settings.RiftSettings
-import dev.slne.surf.rift.server.game.team.RiftTeams
 import dev.slne.surf.api.core.messages.Colors
 import dev.slne.surf.api.core.messages.adventure.buildText
-import dev.slne.surf.rift.server.message.actionBar
 import dev.slne.surf.api.core.messages.adventure.sendText
+import dev.slne.surf.rift.server.game.RiftGame
+import dev.slne.surf.rift.server.game.combat.Healing
+import dev.slne.surf.rift.server.game.flight.RiftPhantomFlight
+import dev.slne.surf.rift.server.game.flight.glide.RiftGliderManager
+import dev.slne.surf.rift.server.game.player.RiftPlayer
+import dev.slne.surf.rift.server.game.player.RiftPlayerManager
+import dev.slne.surf.rift.server.game.player.RiftPlayerState
+import dev.slne.surf.rift.server.game.settings.RiftSettings
+import dev.slne.surf.rift.server.game.team.RiftTeams
 import dev.slne.surf.rift.server.sound.RiftSounds
 import dev.slne.surf.rift.server.tab.RiftTablist
+import dev.slne.surf.rift.server.util.actionBar
 import dev.slne.surf.rift.server.visibility.RiftVisibility
 import dev.slne.surf.rift.server.visual.ScreenEffects
 import net.kyori.adventure.sound.Sound
@@ -29,10 +28,10 @@ import net.minestom.server.entity.Player
 import net.minestom.server.network.packet.server.play.ParticlePacket
 import net.minestom.server.particle.Particle
 import java.time.Duration
-import java.util.UUID
+import java.util.*
 import kotlin.random.Random
 
-object EliminationService {
+object RiftEliminationService {
     fun eliminate(victim: RiftPlayer, cause: String, directKiller: UUID?, online: Boolean = true) {
         if (!victim.alive) {
             return
@@ -43,13 +42,14 @@ object EliminationService {
         val position = player?.position
 
         val killerUuid = directKiller ?: victim.lastAttacker(now, 15_000L)
-        val killer = killerUuid?.let { RiftPlayers.find(it) }?.takeIf { it.uuid != victim.uuid }
+        val killer =
+            killerUuid?.let { RiftPlayerManager.find(it) }?.takeIf { it.uuid != victim.uuid }
         val assistants = victim.assistants(now, 15_000L, killer?.uuid)
-            .mapNotNull { RiftPlayers.find(it) }
+            .mapNotNull { RiftPlayerManager.find(it) }
             .filter { !RiftTeams.areTeammates(it, victim) }
 
-        GliderManager.land(victim.uuid)
-        PhantomFlight.remove(victim.uuid)
+        RiftGliderManager.land(victim.uuid)
+        RiftPhantomFlight.remove(victim.uuid)
         Healing.clear(victim.uuid)
 
         victim.state = RiftPlayerState.SPECTATOR
@@ -67,7 +67,7 @@ object EliminationService {
 
             if (online) {
                 deathEffects(player, position, victim, killer)
-                SpectatorService.makeSpectator(player, position.add(0.0, 2.0, 0.0))
+                RiftSpectatorService.makeSpectator(player, position.add(0.0, 2.0, 0.0))
                 sendSummary(player, victim)
             }
         }
@@ -81,7 +81,7 @@ object EliminationService {
 
     private fun assignPlacement(victim: RiftPlayer) {
         if (!RiftTeams.enabled) {
-            victim.placement = RiftPlayers.alive.size + 1
+            victim.placement = RiftPlayerManager.alive.size + 1
             return
         }
 
@@ -99,7 +99,7 @@ object EliminationService {
     fun assignFinalPlacements(winners: List<RiftPlayer>) {
         winners.forEach { it.placement = 1 }
 
-        val remaining = RiftPlayers.participants
+        val remaining = RiftPlayerManager.participants
             .filter { it.placement == null }
             .sortedByDescending { it.playerOrNull?.health ?: 0f }
 
@@ -139,7 +139,12 @@ object EliminationService {
         }
     }
 
-    private fun deathEffects(player: Player, position: Pos, victim: RiftPlayer, killer: RiftPlayer?) {
+    private fun deathEffects(
+        player: Player,
+        position: Pos,
+        victim: RiftPlayer,
+        killer: RiftPlayer?
+    ) {
         val placement = victim.placement
         val subtitle = when {
             killer != null && placement != null -> buildText {
@@ -163,8 +168,28 @@ object EliminationService {
         player.playSound(RiftSounds.DEATH, Sound.Emitter.self())
 
         val instance = player.instance ?: return
-        instance.sendGroupedPacket(ParticlePacket(Particle.SOUL_FIRE_FLAME, false, true, position.add(0.0, 1.0, 0.0), Vec(0.3, 0.6, 0.3), 0.05f, 40))
-        instance.sendGroupedPacket(ParticlePacket(Particle.EXPLOSION, false, true, position.add(0.0, 1.0, 0.0), Vec.ZERO, 0f, 1))
+        instance.sendGroupedPacket(
+            ParticlePacket(
+                Particle.SOUL_FIRE_FLAME,
+                false,
+                true,
+                position.add(0.0, 1.0, 0.0),
+                Vec(0.3, 0.6, 0.3),
+                0.05f,
+                40
+            )
+        )
+        instance.sendGroupedPacket(
+            ParticlePacket(
+                Particle.EXPLOSION,
+                false,
+                true,
+                position.add(0.0, 1.0, 0.0),
+                Vec.ZERO,
+                0f,
+                1
+            )
+        )
     }
 
     private fun dropInventory(player: Player, position: Pos) {
@@ -177,15 +202,24 @@ object EliminationService {
 
             val entity = ItemEntity(item)
             entity.setPickupDelay(Duration.ofMillis(800))
-            entity.velocity = Vec(random.nextDouble(-2.5, 2.5), random.nextDouble(3.0, 5.0), random.nextDouble(-2.5, 2.5))
+            entity.velocity = Vec(
+                random.nextDouble(-2.5, 2.5),
+                random.nextDouble(3.0, 5.0),
+                random.nextDouble(-2.5, 2.5)
+            )
             entity.setInstance(instance, position.add(0.0, 1.0, 0.0))
         }
 
         player.inventory.clear()
     }
 
-    private fun broadcastKillFeed(victim: RiftPlayer, killer: RiftPlayer?, assistants: List<RiftPlayer>, cause: String) {
-        val remaining = RiftPlayers.alive.size
+    private fun broadcastKillFeed(
+        victim: RiftPlayer,
+        killer: RiftPlayer?,
+        assistants: List<RiftPlayer>,
+        cause: String
+    ) {
+        val remaining = RiftPlayerManager.alive.size
         val line = buildText {
             error("☠ ")
 
@@ -234,7 +268,8 @@ object EliminationService {
     fun nameOf(player: RiftPlayer): Component {
         val team = player.team
         return if (team != null && RiftTeams.enabled) {
-            Component.text(team.tag + " ", team.color).append(Component.text(player.name, team.color))
+            Component.text(team.tag + " ", team.color)
+                .append(Component.text(player.name, team.color))
         } else {
             Component.text(player.name, Colors.VARIABLE_VALUE)
         }

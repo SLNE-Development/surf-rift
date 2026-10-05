@@ -7,7 +7,7 @@ import net.minestom.server.instance.Instance
 import net.minestom.server.inventory.AbstractInventory
 import java.util.concurrent.ConcurrentHashMap
 
-object LootChests {
+object LootChestRegistry {
     private val chests = mutableListOf<LootChest>()
     private val byBlock = ConcurrentHashMap<BlockVec, LootChest>()
 
@@ -23,7 +23,9 @@ object LootChests {
         }
     }
 
-    fun at(position: Point): LootChest? = byBlock[BlockVec(position.blockX(), position.blockY(), position.blockZ())]
+    fun at(position: Point): LootChest? =
+        byBlock[BlockVec(position.blockX(), position.blockY(), position.blockZ())]
 
-    fun of(inventory: AbstractInventory): LootChest? = chests.firstOrNull { it.inventory === inventory }
+    fun of(inventory: AbstractInventory): LootChest? =
+        chests.firstOrNull { it.inventory === inventory }
 }

@@ -9,7 +9,7 @@ import dev.slne.surf.rift.common.stats.RiftStatsService
 import dev.slne.surf.rift.server.env.EnvVariables
 import dev.slne.surf.rift.server.game.RiftGame
 import dev.slne.surf.rift.server.game.host.RiftHost
-import dev.slne.surf.rift.server.game.player.RiftPlayers
+import dev.slne.surf.rift.server.game.player.RiftPlayerManager
 import dev.slne.surf.rift.server.game.settings.RiftSettings
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -42,7 +42,10 @@ object RiftStatsReporter {
                 service = client.createRpcService<RiftStatsService>()
                 logger.info("Connected to RabbitMQ for statistics reporting.")
             }.onFailure {
-                logger.error("Failed to connect to RabbitMQ, game results will not be reported.", it)
+                logger.error(
+                    "Failed to connect to RabbitMQ, game results will not be reported.",
+                    it
+                )
             }
         }
     }
@@ -59,10 +62,11 @@ object RiftStatsReporter {
             startedAt = startedAt,
             endedAt = now,
             endReason = RiftGame.endReason ?: RiftGameEndReason.CANCELLED,
-            winnerUuid = RiftGame.winnerPlayer?.uuid?.toString() ?: winners.firstOrNull()?.toString(),
+            winnerUuid = RiftGame.winnerPlayer?.uuid?.toString() ?: winners.firstOrNull()
+                ?.toString(),
             teamSize = dev.slne.surf.rift.server.game.team.RiftTeams.teamSize,
             settings = RiftSettings.snapshot(),
-            players = RiftPlayers.participants.map { player ->
+            players = RiftPlayerManager.participants.map { player ->
                 RiftPlayerResult(
                     uuid = player.uuid.toString(),
                     name = player.name,
@@ -75,7 +79,8 @@ object RiftStatsReporter {
                     damageDealt = player.damageDealt,
                     damageTaken = player.damageTaken,
                     chestsOpened = player.chestsOpened,
-                    survivedSeconds = (((player.eliminatedAtMillis ?: now) - startedAt) / 1000).toInt().coerceAtLeast(0),
+                    survivedSeconds = (((player.eliminatedAtMillis
+                        ?: now) - startedAt) / 1000).toInt().coerceAtLeast(0),
                     killerUuid = player.killer?.toString(),
                     deathCause = player.deathCause,
                 )
@@ -93,7 +98,10 @@ object RiftStatsReporter {
             connectJob?.join()
             val rpc = service
             if (rpc == null) {
-                logger.warn("Could not report game result {}, RabbitMQ is not connected.", result.gameId)
+                logger.warn(
+                    "Could not report game result {}, RabbitMQ is not connected.",
+                    result.gameId
+                )
                 return@launch
             }
 
@@ -104,7 +112,11 @@ object RiftStatsReporter {
             }.getOrNull()
 
             if (stored == true) {
-                logger.info("Reported game result {} with {} players.", result.gameId, result.players.size)
+                logger.info(
+                    "Reported game result {} with {} players.",
+                    result.gameId,
+                    result.players.size
+                )
             } else {
                 logger.warn("The rift host did not confirm game result {}.", result.gameId)
             }

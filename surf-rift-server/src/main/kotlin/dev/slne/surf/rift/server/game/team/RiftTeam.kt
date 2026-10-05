@@ -1,15 +1,15 @@
 package dev.slne.surf.rift.server.game.team
 
-import dev.slne.surf.rift.server.game.player.RiftPlayers
+import dev.slne.surf.rift.server.game.player.RiftPlayerManager
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
 import net.minestom.server.MinecraftServer
 import net.minestom.server.network.packet.server.play.TeamsPacket
 import net.minestom.server.scoreboard.Team
-import java.util.UUID
+import java.util.*
 
-class RiftTeam(val id: Int, val palette: RiftTeamPalette) {
+class RiftTeam(val id: Int, val palette: RiftTeamColors) {
     val members = linkedSetOf<UUID>()
     val color: NamedTextColor get() = palette.textColor
     val tag: String get() = "T$id"
@@ -29,7 +29,7 @@ class RiftTeam(val id: Int, val palette: RiftTeamPalette) {
         updateSeeInvisiblePlayers(true)
     }
 
-    val riftPlayers get() = members.mapNotNull { RiftPlayers.find(it) }
+    val riftPlayers get() = members.mapNotNull { RiftPlayerManager.find(it) }
     val alive get() = riftPlayers.any { it.alive }
     val aliveCount get() = riftPlayers.count { it.alive }
 

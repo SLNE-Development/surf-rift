@@ -6,7 +6,7 @@ import dev.slne.surf.api.minestom.inventory.framework.open
 import dev.slne.surf.rift.server.game.RiftGame
 import dev.slne.surf.rift.server.game.team.RiftTeams
 import dev.slne.surf.rift.server.menu.teamSelectionView
-import dev.slne.surf.rift.server.message.send
+import dev.slne.surf.rift.server.util.send
 
 fun teamCommand() = commandTree("team") {
     playerExecutor { player, _ ->

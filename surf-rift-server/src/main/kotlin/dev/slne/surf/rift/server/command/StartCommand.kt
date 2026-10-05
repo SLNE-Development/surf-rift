@@ -7,8 +7,8 @@ import dev.slne.surf.api.minestom.command.dsl.playerExecutor
 import dev.slne.surf.rift.server.env.EnvVariables
 import dev.slne.surf.rift.server.game.RiftGame
 import dev.slne.surf.rift.server.game.host.RiftHost
-import dev.slne.surf.rift.server.message.send
 import dev.slne.surf.rift.server.sound.RiftSounds
+import dev.slne.surf.rift.server.util.send
 import net.kyori.adventure.sound.Sound
 import net.minestom.server.entity.Player
 
