@@ -15,3 +15,4 @@ rootProject.name = "surf-rift"
 
 include("surf-rift-host")
 include("surf-rift-server")
+include("surf-rift-common")
