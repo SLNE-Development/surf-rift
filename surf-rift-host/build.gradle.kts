@@ -5,6 +5,10 @@ plugins {
     id("dev.slne.surf.microservice")
 }
 
+dependencies {
+    api(projects.surfRiftRedis)
+}
+
 surfStandaloneApi {
     withSurfRedis()
     withSurfDatabaseR2dbc("2.3.4", "dev.slne.surf.rift.libs")
