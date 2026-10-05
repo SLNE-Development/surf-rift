@@ -1,7 +1,10 @@
 package dev.slne.surf.rift.host.database
 
 import dev.slne.surf.database.DatabaseApi
+import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.r2dbc.SchemaUtils
 import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
+import dev.slne.surf.rift.host.database.table.RiftGamePlayersTable
+import dev.slne.surf.rift.host.database.table.RiftGamesTable
 import java.nio.file.Path
 
 object DatabaseService {
@@ -11,7 +14,7 @@ object DatabaseService {
         databaseApi = DatabaseApi.create(dataPath)
 
         suspendTransaction {
-            // TABLES
+            SchemaUtils.create(RiftGamesTable, RiftGamePlayersTable)
         }
     }
 

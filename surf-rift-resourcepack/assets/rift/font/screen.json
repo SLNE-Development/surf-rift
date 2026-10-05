@@ -1,0 +1,58 @@
+{
+  "providers": [
+    {
+      "type": "bitmap",
+      "file": "rift:font/screen/fill.png",
+      "ascent": 253,
+      "height": 512,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "rift:font/screen/damage.png",
+      "ascent": 72,
+      "height": 150,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "rift:font/screen/kill.png",
+      "ascent": 72,
+      "height": 150,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "rift:font/screen/death.png",
+      "ascent": 72,
+      "height": 150,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "rift:font/screen/zone.png",
+      "ascent": 72,
+      "height": 150,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "rift:font/screen/victory.png",
+      "ascent": 17,
+      "height": 20,
+      "chars": [
+        ""
+      ]
+    }
+  ]
+}

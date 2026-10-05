@@ -51,3 +51,7 @@ bin/
 !/.projectatlas/projectatlas-nonsource-files.toon
 # local deploy credentials
 .env
+### Local ###
+**/run/
+__pycache__/
+**/logs/

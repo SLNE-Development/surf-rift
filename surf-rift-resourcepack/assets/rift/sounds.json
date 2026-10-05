@@ -1,0 +1,200 @@
+{
+  "ui.countdown.tick": {
+    "subtitle": "Countdown",
+    "sounds": [
+      {
+        "name": "rift:ui/countdown_tick",
+        "stream": false
+      }
+    ]
+  },
+  "ui.countdown.go": {
+    "subtitle": "Los!",
+    "sounds": [
+      {
+        "name": "rift:ui/countdown_go",
+        "stream": false
+      }
+    ]
+  },
+  "ui.click": {
+    "subtitle": "Klick",
+    "sounds": [
+      {
+        "name": "rift:ui/click",
+        "stream": false
+      }
+    ]
+  },
+  "ui.deny": {
+    "subtitle": "Abgelehnt",
+    "sounds": [
+      {
+        "name": "rift:ui/deny",
+        "stream": false
+      }
+    ]
+  },
+  "ui.team_join": {
+    "subtitle": "Team beigetreten",
+    "sounds": [
+      {
+        "name": "rift:ui/team_join",
+        "stream": false
+      }
+    ]
+  },
+  "ui.host": {
+    "subtitle": "Host zugewiesen",
+    "sounds": [
+      {
+        "name": "rift:ui/host",
+        "stream": false
+      }
+    ]
+  },
+  "game.transition": {
+    "subtitle": "Übergang",
+    "sounds": [
+      {
+        "name": "rift:game/transition",
+        "stream": false
+      }
+    ]
+  },
+  "boarding.mount": {
+    "subtitle": "Phantom bestiegen",
+    "sounds": [
+      {
+        "name": "rift:boarding/mount",
+        "stream": false
+      }
+    ]
+  },
+  "boarding.rise": {
+    "subtitle": "Phantome steigen auf",
+    "sounds": [
+      {
+        "name": "rift:boarding/rise",
+        "stream": false
+      }
+    ]
+  },
+  "flight.wind": {
+    "subtitle": "Flugwind",
+    "sounds": [
+      {
+        "name": "rift:flight/wind",
+        "stream": false
+      }
+    ]
+  },
+  "flight.jump": {
+    "subtitle": "Absprung",
+    "sounds": [
+      {
+        "name": "rift:flight/jump",
+        "stream": false
+      }
+    ]
+  },
+  "parachute.open": {
+    "subtitle": "Fallschirm öffnet sich",
+    "sounds": [
+      {
+        "name": "rift:parachute/open",
+        "stream": false
+      }
+    ]
+  },
+  "parachute.land": {
+    "subtitle": "Landung",
+    "sounds": [
+      {
+        "name": "rift:parachute/land",
+        "stream": false
+      }
+    ]
+  },
+  "game.kill": {
+    "subtitle": "Eliminierung",
+    "sounds": [
+      {
+        "name": "rift:game/kill",
+        "stream": false
+      }
+    ]
+  },
+  "game.assist": {
+    "subtitle": "Assist",
+    "sounds": [
+      {
+        "name": "rift:game/assist",
+        "stream": false
+      }
+    ]
+  },
+  "game.death": {
+    "subtitle": "Eliminiert",
+    "sounds": [
+      {
+        "name": "rift:game/death",
+        "stream": false
+      }
+    ]
+  },
+  "game.elimination": {
+    "subtitle": "Spieler eliminiert",
+    "sounds": [
+      {
+        "name": "rift:game/elimination",
+        "stream": false
+      }
+    ]
+  },
+  "game.victory": {
+    "subtitle": "Sieg",
+    "sounds": [
+      {
+        "name": "rift:game/victory",
+        "stream": false
+      }
+    ]
+  },
+  "game.defeat": {
+    "subtitle": "Niederlage",
+    "sounds": [
+      {
+        "name": "rift:game/defeat",
+        "stream": false
+      }
+    ]
+  },
+  "zone.warning": {
+    "subtitle": "Zonenwarnung",
+    "sounds": [
+      {
+        "name": "rift:zone/warning",
+        "stream": false
+      }
+    ]
+  },
+  "zone.shrink": {
+    "subtitle": "Zone schrumpft",
+    "sounds": [
+      {
+        "name": "rift:zone/shrink",
+        "stream": false
+      }
+    ]
+  },
+  "zone.damage": {
+    "subtitle": "Zonenschaden",
+    "sounds": [
+      {
+        "name": "rift:zone/damage",
+        "stream": false
+      }
+    ]
+  }
+}

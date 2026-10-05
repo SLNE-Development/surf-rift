@@ -17,31 +17,3 @@ data class PterodactylCreateServerRequest(
     val featureLimits: PterodactylFeatureLimits,
     val allocation: PterodactylAllocation
 )
-
-@Serializable
-data class PterodactylEnvironment(
-    val riftMap: String
-)
-
-@Serializable
-data class PterodactylLimits(
-    val memory: Int,
-    val swap: Int,
-    val disk: Int,
-    val io: Int,
-    val cpu: Int,
-    @SerialName("oom_disabled")
-    val oomDisabled: Boolean
-)
-
-@Serializable
-data class PterodactylFeatureLimits(
-    val databases: Int,
-    val allocations: Int,
-    val backups: Int
-)
-
-@Serializable
-data class PterodactylAllocation(
-    val default: Int
-)

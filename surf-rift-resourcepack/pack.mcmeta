@@ -1,0 +1,11 @@
+{
+  "pack": {
+    "description": [
+      {"text": "Rift", "color": "#B07CFF", "bold": true},
+      {"text": "Royale", "color": "#5EE7F5", "bold": true},
+      {"text": "\nHUD, Modelle, Effekte & Sounds", "color": "#9AA0B4"}
+    ],
+    "min_format": 88,
+    "max_format": 88
+  }
+}
